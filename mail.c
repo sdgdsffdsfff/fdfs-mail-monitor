@@ -161,7 +161,7 @@ void get_text()
 	memset(mail,0,5*1024);
 
 	need_send = 0;
-	if(strtol(strstr(text,"code\" : ") + strlen("code\" : "),0,10) != 200){
+	if(strtol(strstr(text,"code\":") + strlen("code\":"),0,10) != 200){
 		start = strstr(text,"\"message\"");
 		end = strstr(text,"code") - 1;
 		strncpy(mail,start,end-start);
@@ -177,9 +177,9 @@ void send_mail()
 	char send_command[5*1024 + 1024];
 	memset(send_command,0,6*1024);
 	if(need_send != 0){
-		sprintf(send_command,"echo \"%s\" | mailx -A meizu -v -s \"send from job monitor\" chengyue@meizu.com",mail);
+		sprintf(send_command,"echo \"%s\" | mailx -A meizu -v -s \"send from FastDFS test monitor\" chengyue@meizu.com",mail);
 		system(send_command);
-		sprintf(send_command,"echo \"%s\" | mailx -A meizu -v -s \"send from job monitor\" xueyuan@meizu.com",mail);
+		sprintf(send_command,"echo \"%s\" | mailx -A meizu -v -s \"send from FastDFS test monitor\" xueyuan@meizu.com",mail);
 		system(send_command);
 	}
 }
@@ -198,7 +198,7 @@ static void* mail_job_monitor(time_t job_time,void *arg)
 }
 int main()
 {
-	daemonize();
+	//daemonize();
 
 	log_fd = open("mail_log",O_WRONLY|O_CREAT|O_APPEND);
 
