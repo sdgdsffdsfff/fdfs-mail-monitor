@@ -198,7 +198,7 @@ static void* mail_job_monitor(time_t job_time,void *arg)
 }
 int main()
 {
-	//daemonize();
+	daemonize();
 
 	log_fd = open("mail_log",O_WRONLY|O_CREAT|O_APPEND);
 
