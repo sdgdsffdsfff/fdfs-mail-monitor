@@ -160,11 +160,15 @@ void get_text()
 	char *end = NULL;
 	memset(mail,0,5*1024);
 
+	start = strstr(text,"\"value\":") + strlen("\"value\":");
+	end = strstr(text,"}\r");
+	if(end > start)
+		strncpy(mail,start,end-start);
+
+	//printf("%p,%p\n",start,end);
+	//printf("%s\n",mail);
 	need_send = 0;
 	if(strtol(strstr(text,"code\":") + strlen("code\":"),0,10) != 200){
-		start = strstr(text,"\"message\"");
-		end = strstr(text,"code") - 1;
-		strncpy(mail,start,end-start);
 		need_send = 1;
 	}
 	LOGI(mail);
