@@ -99,7 +99,7 @@ int httpGet(char* hostname,char *url)
 		return -103;
 	}
 	sin.sin_family = AF_INET;
-	sin.sin_port = htons( (unsigned short)80);
+	sin.sin_port = htons( (unsigned short)8080);
 	sin.sin_addr.s_addr = *((unsigned long*)host_addr->h_addr_list[0]);
 	if( connect (sockfd,(const struct sockaddr *)&sin, sizeof(struct sockaddr_in) ) == -1 ) {
 		LOGE(strerror(errno));
@@ -174,22 +174,24 @@ void get_text()
 	need_send = 0;
 	if(strtol(strstr(text,"code\":[") + strlen("code\":["),0,10) != 200){
 		need_send = 1;
-	}
 	
-	int i;
-	char *p_start,*p_end;
-	start = strstr(text,"email\":[") + strlen("email\":[");
-	end = strstr(text,"],\"message\"");
-	if(end > start)
-	{
-		p_start = start;
-		for(i = 0;i != 128;++i)
+		int i;
+		char *p_start,*p_end;
+		start = NULL;
+		end = NULL;
+		start = strstr(text,"email\":[") + strlen("email\":[");
+		end = strstr(text,"],\"message\"");
+		if(end > start)
 		{
-			p_end = strstr(p_start + 1,"\"");
-			strncpy(mail_address[i],p_start + 1,p_end - p_start - 1);
-			p_start = p_end + 2;
-			if(p_end + 1 == end)
-				break;
+			p_start = start;
+			for(i = 0;i != 128;++i)
+			{
+				p_end = strstr(p_start + 1,"\"");
+				strncpy(mail_address[i],p_start + 1,p_end - p_start - 1);
+				p_start = p_end + 2;
+				if(p_end + 1 == end)
+					break;
+			}
 		}
 	}
 	LOGI(mail);
@@ -208,6 +210,7 @@ void send_mail()
 			if(mail_address[i][0] == 0)
 				break;
 			sprintf(send_command,"echo \"%s\" | mailx -A meizu -v -s \"send from FastDFS test monitor\" %s",mail,mail_address[i]);
+			printf("%s\n",send_command);
 			system(send_command);
 		}
 	}
@@ -219,7 +222,7 @@ static void* mail_job_monitor(time_t job_time,void *arg)
 	timetostr(&job_time,key);
 	LOGI(key);
 	LOGI("\n");
-	if(httpGet("172.16.3.14","GET /fastdfs-v1.0/alert/alert.do HTTP/1.1\r\n") < 0)
+	if(httpGet("172.16.3.14","GET /fastdfs-v2.0/alert/alert.do HTTP/1.1\r\n") < 0)
 		return NULL;
 	get_text();
 	send_mail();
@@ -227,14 +230,12 @@ static void* mail_job_monitor(time_t job_time,void *arg)
 }
 int main()
 {
-	daemonize();
+	//daemonize();
 
 	log_fd = open("mail_log",O_WRONLY|O_CREAT|O_APPEND);
 
 	//mail_job_monitor(123,NULL);
 
-	//get_text();
-	//send_mail();
 	//return 0;
 	struct job job;
 	job_service(&job);
