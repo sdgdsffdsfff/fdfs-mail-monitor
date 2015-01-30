@@ -154,12 +154,16 @@ int httpGet(char* hostname,char *url)
 char mail[5*1024];
 int need_send;
 
+char mail_address[128][128];
+
 void get_text()
 {
 	char *start = NULL;
 	char *end = NULL;
 	memset(mail,0,5*1024);
 
+	memset(mail_address,0,128 * 128);
+	//strcpy(text,"{\"code\":[201],\"email\":[\"a@meizu.com\",\"b@meizu.com\",\"c@meizu.com\"],\"message\":\"状态异常\",\"value\":{\"Storage 1-2\":\"空闲容量低于阀值 1400000\",\"Storage 2-1\":\"空闲容量低于阀值 1400000\"}}\r");
 	start = strstr(text,"\"value\":") + strlen("\"value\":");
 	end = strstr(text,"}\r");
 	if(end > start)
@@ -168,8 +172,25 @@ void get_text()
 	//printf("%p,%p\n",start,end);
 	//printf("%s\n",mail);
 	need_send = 0;
-	if(strtol(strstr(text,"code\":") + strlen("code\":"),0,10) != 200){
+	if(strtol(strstr(text,"code\":[") + strlen("code\":["),0,10) != 200){
 		need_send = 1;
+	}
+	
+	int i;
+	char *p_start,*p_end;
+	start = strstr(text,"email\":[") + strlen("email\":[");
+	end = strstr(text,"],\"message\"");
+	if(end > start)
+	{
+		p_start = start;
+		for(i = 0;i != 128;++i)
+		{
+			p_end = strstr(p_start + 1,"\"");
+			strncpy(mail_address[i],p_start + 1,p_end - p_start - 1);
+			p_start = p_end + 2;
+			if(p_end + 1 == end)
+				break;
+		}
 	}
 	LOGI(mail);
 	LOGI("\n");
@@ -180,11 +201,15 @@ void send_mail()
 {
 	char send_command[5*1024 + 1024];
 	memset(send_command,0,6*1024);
+	int i;
 	if(need_send != 0){
-		sprintf(send_command,"echo \"%s\" | mailx -A meizu -v -s \"send from FastDFS test monitor\" chengyue@meizu.com",mail);
-		system(send_command);
-		sprintf(send_command,"echo \"%s\" | mailx -A meizu -v -s \"send from FastDFS test monitor\" xueyuan@meizu.com",mail);
-		system(send_command);
+		for(i = 0;i != 128;++i)
+		{
+			if(mail_address[i][0] == 0)
+				break;
+			sprintf(send_command,"echo \"%s\" | mailx -A meizu -v -s \"send from FastDFS test monitor\" %s",mail,mail_address[i]);
+			system(send_command);
+		}
 	}
 }
 
@@ -208,6 +233,8 @@ int main()
 
 	//mail_job_monitor(123,NULL);
 
+	//get_text();
+	//send_mail();
 	//return 0;
 	struct job job;
 	job_service(&job);
