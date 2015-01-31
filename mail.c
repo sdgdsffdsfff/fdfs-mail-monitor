@@ -172,7 +172,9 @@ void get_text()
 	//printf("%p,%p\n",start,end);
 	//printf("%s\n",mail);
 	need_send = 0;
-	if(strtol(strstr(text,"code\":[") + strlen("code\":["),0,10) != 200){
+	int code;
+	code = strtol(strstr(text,"code\":[") + strlen("code\":["),0,10);
+	if(code != 200){
 		need_send = 1;
 	
 		int i;
@@ -230,7 +232,7 @@ static void* mail_job_monitor(time_t job_time,void *arg)
 }
 int main()
 {
-	//daemonize();
+	daemonize();
 
 	log_fd = open("mail_log",O_WRONLY|O_CREAT|O_APPEND);
 
