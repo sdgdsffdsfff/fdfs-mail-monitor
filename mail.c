@@ -173,7 +173,15 @@ void get_text()
 	//printf("%s\n",mail);
 	need_send = 0;
 	int code;
-	code = strtol(strstr(text,"code\":[") + strlen("code\":["),0,10);
+	char *code_p = NULL;
+	if((code_p = strstr(text,"code\":[")) == NULL){
+		need_send = 1;
+		snprintf(mail,5*1024,"code can't find,the http text is \"%s\" end",text);
+		LOGI(mail);
+		LOGI("\n");
+		return ;
+	}
+	code = strtol(code_p + strlen("code\":["),0,10);
 	if(code != 200){
 		need_send = 1;
 	
